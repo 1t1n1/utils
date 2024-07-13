@@ -1,0 +1,60 @@
+#!/bin/bash
+
+MODULE=$1
+STATE=$2
+POLYBAR_CONFIG_PATH=~/bin/dotfiles/.config/polybar
+POLYBAR_CONFIG=$POLYBAR_CONFIG_PATH/config.ini
+POLYBAR_LAUNCHER=$POLYBAR_CONFIG_PATH/launch.sh
+
+print_usage() {
+    echo "Usage: pb-modify <MODULE> <STATE>"
+    echo ""
+    echo "  State : on/off"
+    echo "  Supported modules:"
+    echo "      - ip"
+}
+
+check_args() {
+    if [[ $MODULE != "ip" ]]; then
+        print_usage
+        exit
+    elif [[ $STATE != "on" ]] && [[ $STATE != "off" ]]; then
+        print_usage
+        exit
+    fi
+}
+
+adjust_ip() {
+    on="label\-connected\ \=\ \\ \%essid\%\ \%local\_ip\%\ \祝\ \%upspeed\%\ \\ \%downspeed\%"
+    off="label\-connected\ \=\ \\ \%essid\%\ \祝\ \%upspeed\%\ \\ \%downspeed\%"
+    if [[ $STATE == "on" ]]; then
+        sed -i s/"$off"/"$on"/ $POLYBAR_CONFIG
+    else
+        sed -i s/"$on"/"$off"/ $POLYBAR_CONFIG
+    fi
+}
+
+restart_polybar() {
+    $POLYBAR_LAUNCHER > /dev/null
+}
+
+modify() {
+    case $MODULE in 
+        "ip")
+            adjust_ip
+            ;;
+        *)
+            echo "Unrecognized module"
+            print_usage
+            exit
+            ;;
+    esac
+    restart_polybar
+}
+
+main() {
+    check_args
+    modify
+}
+
+main
