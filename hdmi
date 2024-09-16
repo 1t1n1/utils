@@ -2,11 +2,13 @@
 
 STATE=$1
 OPTION=$2
+TABLET=$3
 
 print_usage() {
     echo "Usage: hdmi <STATE> [option]"
     echo ""
     echo "  State : on/off"
+	echo "	--tablet Indicate that the device is an Android tablet (default is false)"
     echo "  Available options:"
     echo "      --left-of"
     echo "      --right-of"
@@ -37,17 +39,44 @@ activate() {
     fi
 }
 
+activate_tablet() {
+	ADB_OUTPUT=$(adb reverse tcp:3131 tcp:3131 2>&1)
+	if [[ $ADB_OUTPUT == *"no devices/emulators found"* ]]; then
+		echo "ERROR: No Android device connected. Remove this check if you want to continue over wifi"
+		exit
+	fi
+	
+	xrandr --addmode HDMI-1 1920x1080
+    if [[ -z $OPTION ]]; then
+        xrandr --output HDMI-1 --mode 1920x1080 --same-as eDP-1
+    else
+        xrandr --output HDMI-1 --mode 1920x1080 $OPTION eDP-1
+    fi
+
+	deskreen 2>/dev/null 1>/dev/null &
+	echo -n "PASTE URI HERE: "
+	read URI
+	URI_LOCALHOST=$(echo $URI | sed 's/http:\/\/.*:3131/http:\/\/localhost:3131/g')
+	echo "[+] Using $URI_LOCALHOST"
+	adb shell am start -a android.intent.action.VIEW -d $URI_LOCALHOST 2>/dev/null 1>/dev/null &
+}
+
 deactivate() { 
     xrandr --output HDMI-1 --off
+	killall deskreen
 }
 
 main() {
     check_args
 
-    if [[ $STATE == "on" ]]; then
+    if [[ $STATE == "on" ]] && [[ -z $TABLET ]]; then
         activate
     	sleep 1
-	i3-msg restart
+		i3-msg restart
+	elif [[ $STATE == "on" ]] && [[ $TABLET == "--tablet" ]]; then
+        activate_tablet
+    	sleep 1
+		i3-msg restart
     elif [[ $STATE == "off" ]]; then
         deactivate
     fi
