@@ -28,14 +28,14 @@ check_args() {
 }
 
 activate() {
-    # The following command assumes that HDMI-1 exists, but depending on the computer,
+    # The following command assumes that HDMI1 exists, but depending on the computer,
     # it might not be true.
     # TODO : Make the script more generalized (I think that xrandr will mark the screen 
     # as connected)
     if [[ -z $OPTION ]]; then
-        xrandr --output HDMI-1 --mode 1920x1080 --same-as eDP-1
+        xrandr --output HDMI1 --mode 1920x1080 --same-as eDP1
     else
-        xrandr --output HDMI-1 --mode 1920x1080 $OPTION eDP-1
+        xrandr --output HDMI1 --mode 1920x1080 $OPTION eDP1
     fi
 }
 
@@ -46,11 +46,11 @@ activate_tablet() {
 		exit
 	fi
 	
-	xrandr --addmode HDMI-1 1920x1080
+	xrandr --addmode HDMI1 1920x1080
     if [[ -z $OPTION ]]; then
-        xrandr --output HDMI-1 --mode 1920x1080 --same-as eDP-1
+        xrandr --output HDMI1 --mode 1920x1080 --same-as eDP1
     else
-        xrandr --output HDMI-1 --mode 1920x1080 $OPTION eDP-1
+        xrandr --output HDMI1 --mode 1920x1080 $OPTION eDP1
     fi
 
 	deskreen 2>/dev/null 1>/dev/null &
@@ -62,7 +62,7 @@ activate_tablet() {
 }
 
 deactivate() { 
-    xrandr --output HDMI-1 --off
+    xrandr --output HDMI1 --off
 	killall deskreen
 }
 
